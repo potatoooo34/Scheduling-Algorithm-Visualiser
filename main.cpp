@@ -12,11 +12,14 @@ class Task{
         int arrival_time;
         int burst_time;
         int rem_time;
-        Task(int pid , int at , int bt){
+        int priority;
+        Task(int pid , int at , int bt, int pr){
             this->pid = pid;
             this->arrival_time = at;
             this->burst_time = bt;
             this->rem_time = bt;
+            this->priority = pr;
+
         }
 };
 class RoundRobin {
@@ -72,6 +75,63 @@ public:
 
     }
 };
+
+class ShortestJobFirst{
+        vector<Task> tasks;
+
+    public:
+        ShortestJobFirst(vector<Task> tasks){
+            this->tasks = tasks;
+        }
+
+
+        void schedule(){
+            sort(tasks.begin() , tasks.end() , [](Task &a , Task&b){
+                return a.burst_time < b.burst_time;
+            });
+            int curr_time = 0;
+            for(auto &it : tasks){
+                curr_time = max(curr_time , it.arrival_time);
+                cout<<"Process id "<<it.pid
+                <<" Executed For "<<it.burst_time<<" ms. Current Time "<<curr_time<<endl;
+                curr_time += it.burst_time;
+            }
+    
+        }
+        
+};
+
+int main() {
+    vector<Task> tasks = {
+        Task(1, 0, 10, 1),
+        Task(2, 3, 5, 2),
+        Task(3, 7, 8, 3),
+        Task(4, 12, 2, 4),
+        Task(5, 15, 6, 5),
+        Task(6, 20, 12, 1),
+        Task(7, 25, 3, 2),
+        Task(8, 28, 7, 3),
+        Task(9, 33, 4, 4),
+        Task(10, 40, 11, 5),
+        Task(11, 42, 9, 1),
+        Task(12, 45, 15, 2),
+        Task(13, 50, 2, 3),
+        Task(14, 55, 6, 4),
+        Task(15, 60, 1, 5),
+        Task(16, 65, 10, 1),
+        Task(17, 70, 5, 2),
+        Task(18, 75, 3, 3),
+        Task(19, 80, 8, 4),
+        Task(20, 90, 7, 5)
+    };
+
+    cout << "Shortest Job First Scheduling Simulation:" << endl;
+    ShortestJobFirst sjf(tasks);
+    sjf.schedule();
+
+    return 0;
+}
+
 
 
 
