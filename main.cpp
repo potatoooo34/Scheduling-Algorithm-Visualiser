@@ -108,67 +108,97 @@ public:
         }
     }
 };
-class Compare{
-    public:
-        bool operator()(Task *a , Task*b){
-            return a->priority > b->priority;
-        }
+class Compare
+{
+public:
+    bool operator()(Task *a, Task *b)
+    {
+        return a->priority > b->priority;
+    }
 };
-//lower number higher priority
+// lower number higher priority
 class PriorityScheduling
 {
-    vector<Task*> tasks;
+    vector<Task *> tasks;
 
 public:
-    PriorityScheduling(vector<Task*> tasks)
+    PriorityScheduling(vector<Task *> tasks)
     {
         this->tasks = tasks;
     }
 
     void Schedule()
     {
-        priority_queue<Task* , vector<Task*> ,Compare> pq;
-        sort(tasks.begin() , tasks.end() , [](Task *a , Task*b){
-            return a->arrival_time < b->arrival_time;
-        });
+        
+        priority_queue<Task *, vector<Task *>, Compare> pq;
+        sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
+             { return a->arrival_time < b->arrival_time; });
 
         int idx = 0;
         int curr_time = 0;
         int n = tasks.size();
-        
-        while(!pq.empty() || idx < n){
-            while(idx < n && curr_time >= tasks[idx]->arrival_time){
+        int time_executed = 0;
+        while (!pq.empty() || idx < n)
+        {
+            while (idx < n && curr_time >= tasks[idx]->arrival_time)
+            {
                 pq.push(tasks[idx]);
                 idx++;
             }
-            if(!pq.empty()){
-                Task* m = pq.top();
+            if (!pq.empty())
+            {
+                auto m = pq.top();
                 pq.pop();
-                
-                
-
+                int time_Start = curr_time;
+                while (m->rem_time > 0)
+                {
+                    if (idx < n && tasks[idx]->arrival_time <= curr_time && tasks[idx]->priority < m->priority)
+                    {
+                        break; // highr priority process arrived;
+                    }
+                    curr_time++;
+                    m->rem_time--;
+                }
+                cout << "Process id " << m->pid
+                     << " Executed For " << curr_time - time_Start << " ms. Current Time " << curr_time << endl;
+                if (m->rem_time > 0)
+                {
+                    pq.push(m);
+                }
+                else
+                {
+                    cout << "Process id " << m->pid << " Finished at " << curr_time << endl;
+                }
             }
-            
+            else
+            {
+                if (idx < n)
+                    curr_time = tasks[idx]->arrival_time;
+            }
         }
-
-
     }
 };
 
 int main()
 {
-    vector<Task*> tasks = {
+    vector<Task *> tasks = {
         new Task(3, 9, 8, 3),
         new Task(5, 23, 6, 5),
         new Task(1, 0, 10, 1),
-        // Add more tasks if needed
-    };
+        new Task(4, 15, 12, 2),
+        new Task(2, 7, 5, 4),
+        new Task(6, 18, 9, 1),
+        new Task(7, 30, 7, 3),
+        new Task(8, 25, 4, 2),
+        new Task(9, 40, 6, 5),
+        new Task(10, 5, 11, 4)};
 
     PriorityScheduling ps(tasks);
     ps.Schedule();
 
-    // Clean up dynamically allocated tasks
-    for (auto task : tasks) {
+   
+    for (auto task : tasks)
+    {
         delete task;
     }
 
