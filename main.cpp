@@ -25,32 +25,41 @@ public:
 };
 class RoundRobin
 {
-    vector<Task> taskss;
+    vector<Task*> taskscopy;
     int timequantum;
+    vector<double> arrival;
+    vector<double> finish;
 
 public:
-    RoundRobin(vector<Task> tasks, int tq)
+    RoundRobin(vector<Task*> tasks, int tq)
     {
-        this->taskss = tasks;
+        this->taskscopy = tasks;
         this->timequantum = tq;
+        int n = tasks.size();
+        arrival.resize(n,0.0);
+        finish.resize(n, 0.0);
+        
     }
 
     void Schedule()
     {
-        vector<Task> tasks = taskss;
-        sort(tasks.begin(), tasks.end(), [](Task &a, Task &b)
-             { return a.arrival_time < b.arrival_time; });
+        vector<Task*> tasks = taskscopy;
+        int n = tasks.size();
+        
+        sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
+             { return a->arrival_time < b->arrival_time; });
         queue<Task *> q;
-
+        
         int curr_time = 0;
         int i = 0;
-        int n = tasks.size();
+        
 
         while (!q.empty() || i < n)
         {
-            while (i < n && tasks[i].arrival_time <= curr_time)
+            while (i < n && tasks[i]->arrival_time <= curr_time)
             {
-                q.push(&tasks[i]);
+                arrival[tasks[i]->pid - 1] = tasks[i]->arrival_time;
+                q.push(tasks[i]);
                 i++;
             }
 
@@ -71,40 +80,54 @@ public:
                 else
                 {
                     cout << "Process id " << t->pid << " Finished at " << curr_time << endl;
+                    finish[t->pid - 1] = curr_time;
                 }
             }
             else
             {
                 if (i < n)
                 {
-                    curr_time = tasks[i].arrival_time;
+                    curr_time = tasks[i]->arrival_time;
                 }
             }
         }
     }
+
+    void avgwait(){
+        int n = taskscopy.size();
+        double sum = 0;
+        for(int i =0 ; i < n ; i++){
+            sum += finish[i] - arrival[i];
+        }
+
+        cout<<"Avg turnaround time: "<<sum / double(n)<<endl;
+    }
+
+    
 };
 
 class ShortestJobFirst
 {
-    vector<Task> tasks;
+    vector<Task*> taskscopy;
 
 public:
-    ShortestJobFirst(vector<Task> tasks)
+    ShortestJobFirst(vector<Task*> tasks)
     {
-        this->tasks = tasks;
+        this->taskscopy = tasks;
     }
 
     void schedule()
     {
-        sort(tasks.begin(), tasks.end(), [](Task &a, Task &b)
-             { return a.burst_time < b.burst_time; });
+        vector<Task*> tasks = taskscopy;
+        sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
+             { return a->burst_time < b->burst_time; });
         int curr_time = 0;
         for (auto &it : tasks)
         {
-            curr_time = max(curr_time, it.arrival_time);
-            cout << "Process id " << it.pid
-                 << " Executed For " << it.burst_time << " ms. Current Time " << curr_time << endl;
-            curr_time += it.burst_time;
+            curr_time = max(curr_time, it->arrival_time);
+            cout << "Process id " << it->pid
+                 << " Executed For " << it->burst_time << " ms. Current Time " << curr_time << endl;
+            curr_time += it->burst_time;
         }
     }
 };
@@ -119,17 +142,17 @@ public:
 // lower number higher priority
 class PriorityScheduling
 {
-    vector<Task *> tasks;
+    vector<Task *> taskscopy;
 
 public:
     PriorityScheduling(vector<Task *> tasks)
     {
-        this->tasks = tasks;
+        this->taskscopy = tasks;
     }
 
     void Schedule()
     {
-        
+        vector<Task*> tasks =this->taskscopy;
         priority_queue<Task *, vector<Task *>, Compare> pq;
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->arrival_time < b->arrival_time; });
@@ -181,20 +204,29 @@ public:
 
 int main()
 {
-    vector<Task *> tasks = {
-        new Task(3, 9, 8, 3),
-        new Task(5, 23, 6, 5),
-        new Task(1, 0, 10, 1),
-        new Task(4, 15, 12, 2),
-        new Task(2, 7, 5, 4),
-        new Task(6, 18, 9, 1),
-        new Task(7, 30, 7, 3),
-        new Task(8, 25, 4, 2),
-        new Task(9, 40, 6, 5),
-        new Task(10, 5, 11, 4)};
+    vector<Task*> tasks = {
+        new Task(1, 4, 5, 3),  // Arrives first, high priority
+        new Task(2, 2, 3, 1),  // Arrives second, lowest priority
+        new Task(3, 0, 8, 2),  // Arrives later, medium priority
+        new Task(4, 10, 2, 4),  // Arrives after some tasks, higher priority
+        new Task(5, 6, 4, 2),  // Medium priority, arrives when others are running
+        new Task(6, 11, 6, 5), // Arrives late, lowest priority
+        new Task(7, 12, 7, 1), // Arrives when system is busy, highest priority
+        new Task(8, 10, 3, 3), // Arrives late, medium priority
+        new Task(9, 13, 5, 4), // Arrives after many, higher priority
+        new Task(10, 18, 4, 2) // Arrives near end, medium priority
+    };
 
-    PriorityScheduling ps(tasks);
-    ps.Schedule();
+
+    // PriorityScheduling ps(tasks);
+    // ps.Schedule();
+
+    RoundRobin rf(tasks , 2);
+    rf.Schedule();
+    rf.avgwait();
+
+    ShortestJobFirst sjf(tasks);
+    sjf.schedule();
 
    
     for (auto task : tasks)
