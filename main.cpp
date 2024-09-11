@@ -8,9 +8,9 @@ using namespace std;
 class Schedular
 {
 public:
-    virtual void Schedule() = 0;         
+    virtual void Schedule() = 0;
     virtual void CalculateMetrics() = 0;
-    virtual ~Schedular() {}              
+    virtual ~Schedular() {}
 };
 class Task
 {
@@ -20,6 +20,7 @@ private:
     int burst_time;
     int rem_time;
     int priority;
+
 public:
     Task(int pid, int at, int bt, int pr)
     {
@@ -29,44 +30,62 @@ public:
         this->rem_time = bt;
         this->priority = pr;
     }
-
-    int getRemTime(){
+    int getRemTime()
+    {
         return this->rem_time;
     }
-
-    int getPriority(){
+    int getPriority()
+    {
         return this->priority;
     }
-    int getPid(){
+    int getPid()
+    {
         return this->pid;
     }
-    int getArrivalTime(){
+    int getArrivalTime()
+    {
         return this->arrival_time;
     }
-    int getBurstTime(){
+    int getBurstTime()
+    {
         return this->burst_time;
     }
-    void decreaseRemTime(int time){
+    void decreaseRemTime(int time)
+    {
         this->rem_time -= time;
     }
-    void setRemTime(int time){
+    void setRemTime(int time)
+    {
         this->rem_time = time;
     }
 };
-class TaskManager{
+class TaskManager
+{
 private:
-    vector<Task*> tasks;
+    vector<Task *> tasks;
 
 public:
-    TaskManager(vector<Task*> tasks){
+    TaskManager(vector<Task *> tasks)
+    {
         this->tasks = tasks;
     }
 
-    void addTasks(Task* task){
+    void addTasks(Task *task)
+    {
         tasks.push_back(task);
     }
-    vector<Task*> getTasks(){
+    vector<Task *> getTasks()
+    {
         return this->tasks;
+    }
+    Task* getTaskById(int id){
+        for(auto it : tasks){
+            if(it->getPid() == id){
+                return it;
+            }
+        }
+
+        return nullptr;
     }
 };
 class RoundRobin : public Schedular
@@ -78,9 +97,9 @@ private:
     vector<double> finish;
 
 public:
-    RoundRobin(TaskManager &tm, int tq) :tm(tm) 
+    RoundRobin(TaskManager &tm, int tq) : tm(tm)
     {
-        
+
         this->timequantum = tq;
         int n = tm.getTasks().size();
         arrival.resize(n, 0.0);
@@ -89,9 +108,9 @@ public:
 
     void Schedule() override
     {
-        
+
         int n = tm.getTasks().size();
-        vector<Task*> tasks = tm.getTasks();
+        vector<Task *> tasks = tm.getTasks();
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->getArrivalTime() < b->getArrivalTime(); });
         queue<Task *> q;
@@ -148,7 +167,8 @@ public:
             sum += finish[i] - arrival[i];
         }
 
-        cout << "Avg turnaround time: " << sum / double(n) << endl<<endl;
+        cout << "Avg turnaround time: " << sum / double(n) << endl
+             << endl;
     }
 };
 
@@ -162,7 +182,7 @@ private:
 public:
     ShortestJobFirst(TaskManager &tm) : tm(tm)
     {
-        
+
         int n = tm.getTasks().size();
         arrive.resize(n, 0.0);
         finish.resize(n, 0.0);
@@ -170,7 +190,7 @@ public:
 
     void Schedule() override
     {
-        vector<Task*> tasks = tm.getTasks();
+        vector<Task *> tasks = tm.getTasks();
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->getBurstTime() < b->getBurstTime(); });
         int curr_time = 0;
@@ -195,7 +215,8 @@ public:
             sum += finish[i] - arrive[i];
         }
 
-        cout << "Avg TAT " << sum / (double)n << endl<<endl;
+        cout << "Avg TAT " << sum / (double)n << endl
+             << endl;
     }
 };
 class Compare
@@ -209,22 +230,22 @@ public:
 // lower number higher priority
 class PriorityScheduling : public Schedular
 {
-    vector<Task *> tasks;
+    TaskManager &taskmanager;
     vector<double> arrive;
     vector<double> finish;
 
 public:
-    PriorityScheduling(vector<Task *> tasks)
+    PriorityScheduling(TaskManager &tm) :taskmanager(tm)
     {
-        this->tasks = tasks;
-        int n = tasks.size();
+        
+        int n = taskmanager.getTasks().size();
         arrive.resize(n, 0.0);
         finish.resize(n, 0.0);
     }
 
     void Schedule() override
     {
-
+        vector<Task*> tasks = taskmanager.getTasks();
         priority_queue<Task *, vector<Task *>, Compare> pq;
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->getArrivalTime() < b->getArrivalTime(); });
@@ -277,20 +298,22 @@ public:
     }
     void CalculateMetrics() override
     {
-        int n = tasks.size();
+        int n = taskmanager.getTasks().size();
 
         double sum = 0;
         for (int i = 0; i < n; i++)
         {
             sum += finish[i] - arrive[i];
         }
-        cout << "Average TAT " << sum / (double)n << endl<<endl;
+        cout << "Average TAT " << sum / (double)n << endl
+             << endl;
     }
 };
 
+
 int main()
 {
-    
+
     vector<Task *> tasks = {
         new Task(1, 4, 5, 3),  // Process ID 1, Arrival Time 4, Burst Time 5, Priority 3
         new Task(2, 2, 3, 1),  // Process ID 2, Arrival Time 2, Burst Time 3, Priority 1
@@ -304,28 +327,26 @@ int main()
         new Task(10, 18, 4, 2) // Process ID 10, Arrival Time 18, Burst Time 4, Priority 2
     };
 
-   
     TaskManager tm(tasks);
 
-    // Priority Scheduling
+    
     cout << "Priority Scheduling:\n";
-    PriorityScheduling ps(tm.getTasks());
+    PriorityScheduling ps(tm);
     ps.Schedule();
     ps.CalculateMetrics();
 
-    // Round Robin Scheduling
+    
     cout << "Round Robin Scheduling:\n";
-    RoundRobin rf(tm, 2);  // Time quantum set to 2
+    RoundRobin rf(tm, 2); 
     rf.Schedule();
     rf.CalculateMetrics();
 
-    // Shortest Job First Scheduling
+    
     cout << "Shortest Job First Scheduling:\n";
     ShortestJobFirst sjf(tm);
     sjf.Schedule();
     sjf.CalculateMetrics();
 
-    
     for (auto task : tasks)
     {
         delete task;
