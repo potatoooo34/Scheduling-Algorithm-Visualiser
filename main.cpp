@@ -8,9 +8,9 @@ using namespace std;
 class Schedular
 {
 public:
-    virtual void Schedule() = 0;         // Pure virtual function
-    virtual void CalculateMetrics() = 0; // Pure virtual function
-    virtual ~Schedular() {}              // Virtual destructor is fine
+    virtual void Schedule() = 0;         
+    virtual void CalculateMetrics() = 0;
+    virtual ~Schedular() {}              
 };
 class Task
 {
@@ -71,13 +71,14 @@ public:
 };
 class RoundRobin : public Schedular
 {
+private:
     TaskManager &tm;
     int timequantum;
     vector<double> arrival;
     vector<double> finish;
 
 public:
-    RoundRobin(TaskManager &tm, int tq) :tm(tm)
+    RoundRobin(TaskManager &tm, int tq) :tm(tm) 
     {
         
         this->timequantum = tq;
@@ -153,22 +154,23 @@ public:
 
 class ShortestJobFirst : public Schedular
 {
-    vector<Task *> tasks;
+private:
+    TaskManager &tm;
     vector<double> arrive;
     vector<double> finish;
 
 public:
-    ShortestJobFirst(vector<Task *> tasks)
+    ShortestJobFirst(TaskManager &tm) : tm(tm)
     {
-        this->tasks = tasks;
-        int n = tasks.size();
+        
+        int n = tm.getTasks().size();
         arrive.resize(n, 0.0);
         finish.resize(n, 0.0);
     }
 
     void Schedule() override
     {
-
+        vector<Task*> tasks = tm.getTasks();
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->getBurstTime() < b->getBurstTime(); });
         int curr_time = 0;
@@ -186,7 +188,7 @@ public:
     void CalculateMetrics() override
     {
         double sum = 0;
-        int n = tasks.size();
+        int n = tm.getTasks().size();
 
         for (int i = 0; i < n; i++)
         {
@@ -288,7 +290,7 @@ public:
 
 int main()
 {
-    // Create a vector of Task pointers with dynamic allocation
+    
     vector<Task *> tasks = {
         new Task(1, 4, 5, 3),  // Process ID 1, Arrival Time 4, Burst Time 5, Priority 3
         new Task(2, 2, 3, 1),  // Process ID 2, Arrival Time 2, Burst Time 3, Priority 1
@@ -302,7 +304,7 @@ int main()
         new Task(10, 18, 4, 2) // Process ID 10, Arrival Time 18, Burst Time 4, Priority 2
     };
 
-    // Create TaskManager to manage the tasks
+   
     TaskManager tm(tasks);
 
     // Priority Scheduling
@@ -319,11 +321,11 @@ int main()
 
     // Shortest Job First Scheduling
     cout << "Shortest Job First Scheduling:\n";
-    ShortestJobFirst sjf(tm.getTasks());
+    ShortestJobFirst sjf(tm);
     sjf.Schedule();
     sjf.CalculateMetrics();
 
-    // Clean up dynamically allocated memory
+    
     for (auto task : tasks)
     {
         delete task;
