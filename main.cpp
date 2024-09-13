@@ -63,22 +63,23 @@ public:
 class TaskManager
 {
 private:
-    unordered_map<int , Task*> tasks;
+    unordered_map<int, Task *> tasks;
 
 public:
     TaskManager(vector<Task *> taskslist)
     {
-        for(auto & task : taskslist){
+        for (auto &task : taskslist)
+        {
             tasks[task->getPid()] = task;
         }
     }
-    ~TaskManager() 
+    ~TaskManager()
     {
         for (auto &pair : tasks)
         {
-            delete pair.second; 
+            delete pair.second;
         }
-        tasks.clear(); 
+        tasks.clear();
     }
     void addTasks(Task *task)
     {
@@ -86,14 +87,17 @@ public:
     }
     vector<Task *> getTasks()
     {
-        vector<Task*> task;
-        for(auto &t : tasks){
+        vector<Task *> task;
+        for (auto &t : tasks)
+        {
             task.push_back(t.second);
         }
         return task;
     }
-    Task* getTaskById(int id){
-        if(tasks.find(id) != tasks.end()){
+    Task *getTaskById(int id)
+    {
+        if (tasks.find(id) != tasks.end())
+        {
             return tasks[id];
         }
 
@@ -247,9 +251,9 @@ class PriorityScheduling : public Schedular
     vector<double> finish;
 
 public:
-    PriorityScheduling(TaskManager &tm) :taskmanager(tm)
+    PriorityScheduling(TaskManager &tm) : taskmanager(tm)
     {
-        
+
         int n = taskmanager.getTasks().size();
         arrive.resize(n, 0.0);
         finish.resize(n, 0.0);
@@ -257,7 +261,7 @@ public:
 
     void Schedule() override
     {
-        vector<Task*> tasks = taskmanager.getTasks();
+        vector<Task *> tasks = taskmanager.getTasks();
         priority_queue<Task *, vector<Task *>, Compare> pq;
         sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
              { return a->getArrivalTime() < b->getArrivalTime(); });
@@ -322,49 +326,132 @@ public:
     }
 };
 
-class MultiLevelQueue{
+class MultiLevelQueue : public Schedular
+{
+private:
+    queue<Task *> highest;
+    queue<Task *> middle;
+    queue<Task *> lower;
 
+    TaskManager &taskmanager;
+    int timequantum;
+
+public:
+    MultiLevelQueue(int timeq, TaskManager &tm) : taskmanager(tm)
+    {
+        this->timequantum = timeq;
+    }
+
+    void Schedule() override
+    {
+        vector<Task *> tasks = taskmanager.getTasks();
+        sort(tasks.begin(), tasks.end(), [](Task *a, Task *b)
+             { return a->getArrivalTime() < b->getArrivalTime(); });
+
+        int curr_time = 0, idx = 0;
+        int n = tasks.size();
+
+        while (idx < n && curr_time <= tasks[idx]->getArrivalTime())
+        {
+            int priority = tasks[idx]->getPriority();
+
+            if (priority == 1)
+            {
+                highest.push(tasks[idx]);
+            }
+            else if (priority > 1 && priority <= 3)
+            {
+                middle.push(tasks[idx]);
+            }
+            else
+            {
+                lower.push(tasks[idx]);
+            }
+
+            if (!highest.empty())
+            {
+                while (idx < n && tasks[idx]->getArrivalTime() <= curr_time)
+                {
+                    if(tasks[idx]->getPriority() == 1){
+                        highest.push(tasks[idx]);
+                    }
+                    else if(tasks[idx]->getPriority() > 1 && tasks[idx]->getPriority() <= 3){
+                        middle.push(tasks[idx]);
+                    }
+                    else{
+                        lower.push(tasks[idx]);
+                    }
+                    idx++;
+                }
+
+                
+                    Task *t = q.front();
+                    q.pop();
+
+                    int time_executed = min(t->getRemTime(), this->timequantum);
+                    curr_time += time_executed;
+                    t->decreaseRemTime(time_executed);
+                    cout << "Process id " << t->getPid() << " Executed for " << time_executed
+                         << " ms Remaining time " << t->getRemTime() << ". Current Time " << curr_time << endl;
+                    if (t->getRemTime() > 0)
+                    {
+                        q.push(t);
+                    }
+                    else
+                    {
+                        cout << "Process id " << t->getPid() << " Finished at " << curr_time << endl;
+                        t->setRemTime(t->getBurstTime());
+                        
+                    }
+                }
+                else
+                {
+                    if (idx < n)
+                    {
+                        curr_time = tasks[i]->getArrivalTime();
+                    }
+                }
+            
+        }
+    }
 };
 int main()
 {
     vector<Task *> tasks = {
-        new Task(1, 4, 5, 3),  
-        new Task(2, 2, 3, 1),  
-        new Task(3, 0, 8, 2),  
-        new Task(4, 10, 2, 4), 
-        new Task(5, 6, 4, 2),  
-        new Task(6, 11, 6, 5), 
-        new Task(7, 12, 7, 1), 
-        new Task(8, 10, 3, 3), 
-        new Task(9, 13, 5, 4), 
-        new Task(10, 18, 4, 2)
-    };
+        new Task(1, 4, 5, 3),
+        new Task(2, 2, 3, 1),
+        new Task(3, 0, 8, 2),
+        new Task(4, 10, 2, 4),
+        new Task(5, 6, 4, 2),
+        new Task(6, 11, 6, 5),
+        new Task(7, 12, 7, 1),
+        new Task(8, 10, 3, 3),
+        new Task(9, 13, 5, 4),
+        new Task(10, 18, 4, 2)};
 
     TaskManager tm(tasks);
 
     // Priority Scheduling
     cout << "Priority Scheduling:\n";
-    
+
     PriorityScheduling ps(tm);
     ps.Schedule();
     ps.CalculateMetrics();
-    
 
     // Round Robin Scheduling
     cout << "Round Robin Scheduling:\n";
-   
+
     RoundRobin rf(tm, 2);
     rf.Schedule();
     rf.CalculateMetrics();
-   
 
     // Shortest Job First Scheduling
     cout << "Shortest Job First Scheduling:\n";
-   
+
     ShortestJobFirst sjf(tm);
     sjf.Schedule();
     sjf.CalculateMetrics();
-    
+
     for (auto task : tasks)
     {
         delete task;
