@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <chrono>
 
 using namespace std;
 // create a class with pid , burst time and arrival time , priority
@@ -62,27 +63,38 @@ public:
 class TaskManager
 {
 private:
-    vector<Task *> tasks;
+    unordered_map<int , Task*> tasks;
 
 public:
-    TaskManager(vector<Task *> tasks)
+    TaskManager(vector<Task *> taskslist)
     {
-        this->tasks = tasks;
+        for(auto & task : taskslist){
+            tasks[task->getPid()] = task;
+        }
     }
-
+    ~TaskManager() 
+    {
+        for (auto &pair : tasks)
+        {
+            delete pair.second; 
+        }
+        tasks.clear(); 
+    }
     void addTasks(Task *task)
     {
-        tasks.push_back(task);
+        tasks[task->getPid()] = task;
     }
     vector<Task *> getTasks()
     {
-        return this->tasks;
+        vector<Task*> task;
+        for(auto &t : tasks){
+            task.push_back(t.second);
+        }
+        return task;
     }
     Task* getTaskById(int id){
-        for(auto it : tasks){
-            if(it->getPid() == id){
-                return it;
-            }
+        if(tasks.find(id) != tasks.end()){
+            return tasks[id];
         }
 
         return nullptr;
@@ -310,43 +322,49 @@ public:
     }
 };
 
+class MultiLevelQueue{
 
+};
 int main()
 {
-
     vector<Task *> tasks = {
-        new Task(1, 4, 5, 3),  // Process ID 1, Arrival Time 4, Burst Time 5, Priority 3
-        new Task(2, 2, 3, 1),  // Process ID 2, Arrival Time 2, Burst Time 3, Priority 1
-        new Task(3, 0, 8, 2),  // Process ID 3, Arrival Time 0, Burst Time 8, Priority 2
-        new Task(4, 10, 2, 4), // Process ID 4, Arrival Time 10, Burst Time 2, Priority 4
-        new Task(5, 6, 4, 2),  // Process ID 5, Arrival Time 6, Burst Time 4, Priority 2
-        new Task(6, 11, 6, 5), // Process ID 6, Arrival Time 11, Burst Time 6, Priority 5
-        new Task(7, 12, 7, 1), // Process ID 7, Arrival Time 12, Burst Time 7, Priority 1
-        new Task(8, 10, 3, 3), // Process ID 8, Arrival Time 10, Burst Time 3, Priority 3
-        new Task(9, 13, 5, 4), // Process ID 9, Arrival Time 13, Burst Time 5, Priority 4
-        new Task(10, 18, 4, 2) // Process ID 10, Arrival Time 18, Burst Time 4, Priority 2
+        new Task(1, 4, 5, 3),  
+        new Task(2, 2, 3, 1),  
+        new Task(3, 0, 8, 2),  
+        new Task(4, 10, 2, 4), 
+        new Task(5, 6, 4, 2),  
+        new Task(6, 11, 6, 5), 
+        new Task(7, 12, 7, 1), 
+        new Task(8, 10, 3, 3), 
+        new Task(9, 13, 5, 4), 
+        new Task(10, 18, 4, 2)
     };
 
     TaskManager tm(tasks);
 
-    
+    // Priority Scheduling
     cout << "Priority Scheduling:\n";
+    
     PriorityScheduling ps(tm);
     ps.Schedule();
     ps.CalculateMetrics();
-
     
+
+    // Round Robin Scheduling
     cout << "Round Robin Scheduling:\n";
-    RoundRobin rf(tm, 2); 
+   
+    RoundRobin rf(tm, 2);
     rf.Schedule();
     rf.CalculateMetrics();
+   
 
-    
+    // Shortest Job First Scheduling
     cout << "Shortest Job First Scheduling:\n";
+   
     ShortestJobFirst sjf(tm);
     sjf.Schedule();
     sjf.CalculateMetrics();
-
+    
     for (auto task : tasks)
     {
         delete task;
