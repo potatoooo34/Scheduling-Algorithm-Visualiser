@@ -1,8 +1,9 @@
-#ifndef PRIORITYSCHEDULING_H
-#define PRIORITYSCHEDULING_H
+#ifndef PRIORITYSCHEDULING_HPP
+#define PRIORITYSCHEDULING_HPP
 
 #include "Scheduler.hpp"
 #include "TaskManager.hpp"
+#include "Compare.hpp"
 #include <vector>
 
 class PriorityScheduling : public Scheduler

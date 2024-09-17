@@ -1,5 +1,5 @@
-#ifndef TASKMANAGER_H
-#define TASKMANAGER_H
+#ifndef TASKMANAGER_HPP
+#define TASKMANAGER_HPP
 
 #include <vector>
 #include "Task.hpp"

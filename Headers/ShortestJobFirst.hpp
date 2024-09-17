@@ -1,5 +1,5 @@
-#ifndef SHORTESTJOBFIRST_H
-#define SHORTESTJOBFIRST_H
+#ifndef SHORTESTJOBFIRST_HPP
+#define SHORTESTJOBFIRST_HPP
 
 #include "TaskManager.hpp"
 #include "Scheduler.hpp"

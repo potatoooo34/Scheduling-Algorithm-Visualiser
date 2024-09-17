@@ -1,5 +1,5 @@
-#include "headers/PriorityScheduling.hpp"
-#include "Headers/Compare.hpp"
+#include "../Headers/PriorityScheduling.hpp"
+#include "../Headers/Compare.hpp"
 
 #include <queue>
 #include <iostream>

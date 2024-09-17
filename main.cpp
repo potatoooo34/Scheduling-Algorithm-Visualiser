@@ -475,64 +475,16 @@ int main()
         new Task(1, 3, 5, 4), // Task 4: Arrival 3, Burst 25, Priority 4 (Middle priority)
         new Task(3, 4, 3, 2), // Task 5: Arrival 4, Burst 30, Priority 2 (High priority)
         new Task(2, 5, 6, 1), // Task 6: Arrival 5, Burst 35, Priority 1 (Highest priority)
-
     };
 
     TaskManager tm(tasks);
 
-    // Priority Scheduling
-    // cout << "Priority Scheduling:\n";
-    // PriorityScheduling ps(tm);
-    // ps.Schedule();
-    // ps.CalculateMetrics();
 
-    // // Round Robin Scheduling
-    // cout << "Round Robin Scheduling:\n";
-    // RoundRobin rf(tm, 2);
-    // rf.Schedule();
-    // rf.CalculateMetrics();
-
-    // Shortest Job First Scheduling
-    cout << "Shortest Job First Scheduling:\n";
-    ShortestJobFirst sjf(tm);
-    sjf.Schedule();
-    
-
-    // multiLevelQueue mlq(tm, 3);
-    // mlq.Schedule();
+    multiLevelQueue mlq(tm, 3);
+    mlq.Schedule();
 
     return 0;
 }
 
 
-// #include <iostream>
-// #include "Headers/TaskManager.hpp"
-// #include "Headers/RoundRobin.hpp"
-// #include "Headers/ShortestJobFirst.hpp"
-// #include "Headers/PriorityScheduling.hpp"
-// #include "Headers/MultiLevelQueue.hpp"
 
-
-// #include<vector>
-
-// using namespace std;
-
-// int main() {
-//     vector<Task *> tasks = {
-//         new Task(5, 0, 4, 9), // Task 1: Arrival 0, Burst 10, Priority 9 (Lowest priority)
-//         new Task(4, 2, 2, 5), // Task 3: Arrival 2, Burst 20, Priority 5 (Middle priority)
-//         new Task(1, 3, 5, 4), // Task 4: Arrival 3, Burst 25, Priority 4 (Middle priority)
-//         new Task(3, 4, 3, 2), // Task 5: Arrival 4, Burst 30, Priority 2 (High priority)
-//         new Task(2, 5, 6, 1), // Task 6: Arrival 5, Burst 35, Priority 1 (Highest priority)
-
-//     };
-//     TaskManager tm(tasks);
-//     // Select scheduler
-//     RoundRobin rr(tm, 2);
-//     rr.Schedule();
-//     rr.CalculateMetrics();
-    
-//     // You can similarly instantiate ShortestJobFirst, PriorityScheduling, etc.
-
-//     return 0;
-// }

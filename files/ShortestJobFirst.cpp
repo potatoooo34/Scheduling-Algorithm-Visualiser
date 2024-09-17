@@ -1,4 +1,4 @@
-#include "Headers/ShortestJobFirst.hpp"
+#include "../Headers/ShortestJobFirst.hpp"
 
 #include <iostream>
 #include <vector>

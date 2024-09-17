@@ -1,11 +1,11 @@
-#ifndef MULTILEVELQUEUE_H
-#define MULTILEVELQUEUE_H
+#ifndef MULTILEVELQUEUE_HPP
+#define MULTILEVELQUEUE_HPP
 
 #include <queue>
 #include "TaskManager.hpp"
 using namespace std;
 
-class MultiLevelQueue
+class MultiLevelQueue 
 {
 private:
     TaskManager &tm;

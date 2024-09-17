@@ -1,5 +1,5 @@
-#ifndef ROUNDROBIN_H
-#define ROUNDROBIN_H
+#ifndef ROUNDROBIN_HPP
+#define ROUNDROBIN_HPP
 
 #include <vector>
 #include <queue>

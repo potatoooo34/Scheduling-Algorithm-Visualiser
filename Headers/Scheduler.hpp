@@ -1,5 +1,5 @@
-#ifndef SCHEDULER_H
-#define SCHEDULER_H
+#ifndef SCHEDULER_HPP
+#define SCHEDULER_HPP
 
 class Scheduler
 {
