@@ -179,39 +179,47 @@ public:
 };
 
 // ShortestJobFirst class
-class ShortestJobFirst  {
+class ShortestJobFirst
+{
 private:
-    TaskManager & tm;
+    TaskManager &tm;
 
 public:
     ShortestJobFirst(TaskManager &tm) : tm(tm) {}
 
-    void Schedule()  {
-        vector<Task*> tasks  = tm.getTasks();
+    void Schedule()
+    {
+        vector<Task *> tasks = tm.getTasks();
         int n = tasks.size();
 
         int curr_time = 0;
-        int completed =0;
+        int completed = 0;
 
-        while(completed < n){
-            Task* shortest = nullptr;
+        while (completed < n)
+        {
+            Task *shortest = nullptr;
 
-            for(auto &task : tasks){
-                if(!task->getFinished() && task->getArrivalTime() <= curr_time){
-                    if(shortest == nullptr || shortest->getBurstTime() > task->getBurstTime()){
+            for (auto &task : tasks)
+            {
+                if (!task->getFinished() && task->getArrivalTime() <= curr_time)
+                {
+                    if (shortest == nullptr || shortest->getBurstTime() > task->getBurstTime())
+                    {
                         shortest = task;
                     }
                 }
             }
 
-            if(shortest == nullptr){
+            if (shortest == nullptr)
+            {
                 curr_time++;
                 continue;
             }
 
-            else{
+            else
+            {
                 curr_time += shortest->getBurstTime();
-                cout<<"Process id "<<shortest->getPid() << " executed for "<< shortest->getBurstTime() << " Current Time "<< curr_time<<endl;
+                cout << "Process id " << shortest->getPid() << " executed for " << shortest->getBurstTime() << " Current Time " << curr_time << endl;
                 shortest->setFinished(true);
                 completed++;
             }
@@ -387,7 +395,6 @@ public:
                 }
             }
 
-            // Process middle priority queue
             else if (!middle.empty())
             {
                 Task *t = middle.front();
@@ -404,8 +411,10 @@ public:
                     int priority = tasks[idx]->getPriority();
                     if (priority <= 6 && priority >= 4)
                     {
-                        // If a higher-priority task arrives, preempt the current task
-                        middle.push(t); // Push it back to lower queue
+                        if (t->getRemTime() > 0)
+                        {
+                            middle.push(t); // Re-add the task if it's not finished
+                        } // Push it back to lower queue
                         continue;
                     }
                 }
@@ -438,8 +447,6 @@ public:
 
                     if (priority <= 6 && priority >= 4)
                     {
-                        // If a higher-priority task arrives, preempt the current task
-                        // lower.push(t); // Push it back to lower queue
                         if (t->getRemTime() > 0)
                         {
                             lower.push(t);
@@ -450,7 +457,7 @@ public:
 
                 if (t->getRemTime() > 0)
                 {
-                    lower.push(t); // Re-add the task if it's not finished
+                    lower.push(t);
                 }
                 else
                 {
@@ -458,7 +465,6 @@ public:
                 }
             }
 
-            // Move to next time if all queues are empty and tasks are left
             if (idx < tasks.size() && highest.empty() && middle.empty() && lower.empty())
             {
                 curr_time = tasks[idx]->getArrivalTime();
@@ -471,7 +477,7 @@ int main()
 {
     vector<Task *> tasks = {
         new Task(5, 0, 4, 9), // Task 1: Arrival 0, Burst 10, Priority 9 (Lowest priority)
-        new Task(4, 2, 2, 5), // Task 3: Arrival 2, Burst 20, Priority 5 (Middle priority)
+        new Task(4, 2, 9, 5), // Task 3: Arrival 2, Burst 20, Priority 5 (Middle priority)
         new Task(1, 3, 5, 4), // Task 4: Arrival 3, Burst 25, Priority 4 (Middle priority)
         new Task(3, 4, 3, 2), // Task 5: Arrival 4, Burst 30, Priority 2 (High priority)
         new Task(2, 5, 6, 1), // Task 6: Arrival 5, Burst 35, Priority 1 (Highest priority)
@@ -479,12 +485,8 @@ int main()
 
     TaskManager tm(tasks);
 
-
     multiLevelQueue mlq(tm, 3);
     mlq.Schedule();
 
     return 0;
 }
-
-
-
