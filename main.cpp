@@ -20,7 +20,7 @@ public:
 class Task
 {
 private:
-    int pid;
+    const int pid;
     int arrival_time;
     int burst_time;
     int rem_time;
@@ -32,10 +32,18 @@ public:
     Task(int pid, int at, int bt, int pr)
         : pid(pid), arrival_time(at), burst_time(bt), rem_time(bt), priority(pr), wait_time(0), finished(false) {}
 
-    int getRemTime() const { return rem_time; }
-    int getPriority() const { return priority; }
-    int getPid() const { return pid; }
-    int getArrivalTime() const { return arrival_time; }
+    int getRemTime() const { 
+        return rem_time;
+    }
+    int getPriority() const { 
+        return priority; 
+    }
+    int getPid() const { 
+        return pid;
+    }
+    int getArrivalTime() const { 
+        return arrival_time; 
+    }
     int getBurstTime() const { return burst_time; }
     void decreaseRemTime(int time) { rem_time -= time; }
     void setRemTime(int time) { rem_time = time; }
@@ -44,13 +52,17 @@ public:
         if (priority > 1)
             priority -= change;
     }
-    int getWaitTime() const { return wait_time; }
-    bool getFinished() const { return finished; }
+    int getWaitTime() const { 
+        return wait_time; 
+    }
+    bool getFinished() const { 
+        return finished; 
+    }
     void setFinished(bool cond) { finished = cond; }
     void setWaitingTime(int time) { wait_time = time; }
 };
 
-// TaskManager class
+
 class TaskManager
 {
 private:
@@ -88,8 +100,8 @@ public:
     }
 };
 
-// Compare class for priority scheduling
-class Compare
+
+class Compare //for priority scheduling
 {
 public:
     bool operator()(Task *a, Task *b)
@@ -262,7 +274,7 @@ public:
                 pq.push(tasks[idx]);
                 idx++;
             }
-
+            ageTasks(curr_time, !pq.empty() ? pq.top() : nullptr, pq);
             if (!pq.empty())
             {
                 Task *m = pq.top();
@@ -313,10 +325,12 @@ public:
         cout << "Average TAT " << sum / (double)n << endl;
     }
 
-    void ageTasks(int curr_time, Task *m)
+    void ageTasks(int curr_time, Task *m , priority_queue<Task *, vector<Task *>, Compare> &pq)
     {
         vector<Task *> tasks = taskmanager.getTasks();
+        bool changed = false;
 
+        if(m != nullptr){
         for (auto &task : tasks)
         {
             if (task->getRemTime() > 0 && !task->getFinished() && task->getArrivalTime() <= curr_time && task->getPid() != m->getPid())
@@ -326,9 +340,24 @@ public:
                 {
                     task->increasePriority(1);
                     cout << "Task " << task->getPid() << " Priority increased to " << task->getPriority() << endl;
+                    changed = true;
                 }
             }
         }
+
+        if(changed){
+            priority_queue<Task *, vector<Task *>, Compare> pqn;
+
+            while(!pq.empty()){
+                auto m = pq.top();
+                pq.pop();
+                pqn.push(m);
+            }
+
+            pq = pqn;
+        }
+        }
+
     }
 };
 class multiLevelQueue
@@ -374,7 +403,7 @@ public:
                 idx++;
             }
 
-            // Process highest priority queue
+            
             if (!highest.empty())
             {
                 Task *t = highest.front();
@@ -414,14 +443,14 @@ public:
                         if (t->getRemTime() > 0)
                         {
                             middle.push(t); // Re-add the task if it's not finished
-                        } // Push it back to lower queue
+                        } 
                         continue;
                     }
                 }
 
                 if (t->getRemTime() > 0)
                 {
-                    middle.push(t); // Re-add the task if it's not finished
+                    middle.push(t); 
                 }
                 else
                 {
@@ -429,7 +458,7 @@ public:
                 }
             }
 
-            // Process lower priority queue
+           
             else if (!lower.empty())
             {
                 Task *t = lower.front();
@@ -485,8 +514,11 @@ int main()
 
     TaskManager tm(tasks);
 
-    multiLevelQueue mlq(tm, 3);
-    mlq.Schedule();
+    // multiLevelQueue mlq(tm, 3);
+    // mlq.Schedule();
+
+    PriorityScheduling prs(tm);
+    prs.Schedule();
 
     return 0;
 }
