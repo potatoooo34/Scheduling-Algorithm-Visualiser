@@ -1,4 +1,4 @@
-#include "Headers/Task.hpp"
+#include "../Headers/Task.hpp"
 
 Task::Task(int pid, int at, int bt, int pr)
     : pid(pid), arrival_time(at), burst_time(bt), rem_time(bt), priority(pr), wait_time(0), finished(false) {}

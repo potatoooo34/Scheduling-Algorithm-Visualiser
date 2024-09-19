@@ -32,17 +32,21 @@ public:
     Task(int pid, int at, int bt, int pr)
         : pid(pid), arrival_time(at), burst_time(bt), rem_time(bt), priority(pr), wait_time(0), finished(false) {}
 
-    int getRemTime() const { 
+    int getRemTime() const
+    {
         return rem_time;
     }
-    int getPriority() const { 
-        return priority; 
+    int getPriority() const
+    {
+        return priority;
     }
-    int getPid() const { 
+    int getPid() const
+    {
         return pid;
     }
-    int getArrivalTime() const { 
-        return arrival_time; 
+    int getArrivalTime() const
+    {
+        return arrival_time;
     }
     int getBurstTime() const { return burst_time; }
     void decreaseRemTime(int time) { rem_time -= time; }
@@ -52,16 +56,17 @@ public:
         if (priority > 1)
             priority -= change;
     }
-    int getWaitTime() const { 
-        return wait_time; 
+    int getWaitTime() const
+    {
+        return wait_time;
     }
-    bool getFinished() const { 
-        return finished; 
+    bool getFinished() const
+    {
+        return finished;
     }
     void setFinished(bool cond) { finished = cond; }
     void setWaitingTime(int time) { wait_time = time; }
 };
-
 
 class TaskManager
 {
@@ -100,8 +105,7 @@ public:
     }
 };
 
-
-class Compare //for priority scheduling
+class Compare // for priority scheduling
 {
 public:
     bool operator()(Task *a, Task *b)
@@ -325,42 +329,47 @@ public:
         cout << "Average TAT " << sum / (double)n << endl;
     }
 
-    void ageTasks(int curr_time, Task *m , priority_queue<Task *, vector<Task *>, Compare> &pq)
+    void ageTasks(int curr_time, Task *m, priority_queue<Task *, vector<Task *>, Compare> &pq)
     {
         vector<Task *> tasks = taskmanager.getTasks();
         bool changed = false;
 
-        if(m != nullptr){
-        for (auto &task : tasks)
+        if (m != nullptr)
         {
-            if (task->getRemTime() > 0 && !task->getFinished() && task->getArrivalTime() <= curr_time && task->getPid() != m->getPid())
+            for (auto &task : tasks)
             {
-                task->setWaitingTime(task->getWaitTime() + 1);
-                if (task->getWaitTime() % 2 == 0)
+                if (task->getRemTime() > 0 && !task->getFinished() && task->getArrivalTime() <= curr_time && task->getPid() != m->getPid())
                 {
-                    task->increasePriority(1);
-                    cout << "Task " << task->getPid() << " Priority increased to " << task->getPriority() << endl;
-                    changed = true;
+                    task->setWaitingTime(task->getWaitTime() + 1);
+                    if (task->getWaitTime() % 4 == 0)
+                    {
+                        if (task->getPriority() > 1)
+                        {
+                            task->increasePriority(1);
+                            cout << "Task " << task->getPid() << " Priority increased to " << task->getPriority() << endl;
+                            changed = true;
+                        }
+                    }
                 }
             }
-        }
 
-        if(changed){
-            priority_queue<Task *, vector<Task *>, Compare> pqn;
+            if (changed)
+            {
+                priority_queue<Task *, vector<Task *>, Compare> pqn;
 
-            while(!pq.empty()){
-                auto m = pq.top();
-                pq.pop();
-                pqn.push(m);
+                while (!pq.empty())
+                {
+                    auto m = pq.top();
+                    pq.pop();
+                    pqn.push(m);
+                }
+
+                pq = pqn;
             }
-
-            pq = pqn;
         }
-        }
-
     }
 };
-class multiLevelQueue
+class multiLevelQueue : public Schedular
 {
 private:
     TaskManager &tm;
@@ -372,7 +381,7 @@ private:
 public:
     multiLevelQueue(TaskManager &tm, int timeq) : tm(tm), timequantum(timeq) {}
 
-    void Schedule()
+    void Schedule() override
     {
         int curr_time = 0;
         int idx = 0;
@@ -403,7 +412,6 @@ public:
                 idx++;
             }
 
-            
             if (!highest.empty())
             {
                 Task *t = highest.front();
@@ -443,14 +451,14 @@ public:
                         if (t->getRemTime() > 0)
                         {
                             middle.push(t); // Re-add the task if it's not finished
-                        } 
+                        }
                         continue;
                     }
                 }
 
                 if (t->getRemTime() > 0)
                 {
-                    middle.push(t); 
+                    middle.push(t);
                 }
                 else
                 {
@@ -458,7 +466,6 @@ public:
                 }
             }
 
-           
             else if (!lower.empty())
             {
                 Task *t = lower.front();
@@ -505,13 +512,17 @@ public:
 int main()
 {
     vector<Task *> tasks = {
-        new Task(5, 0, 4, 9), // Task 1: Arrival 0, Burst 10, Priority 9 (Lowest priority)
-        new Task(4, 2, 9, 5), // Task 3: Arrival 2, Burst 20, Priority 5 (Middle priority)
-        new Task(1, 3, 5, 4), // Task 4: Arrival 3, Burst 25, Priority 4 (Middle priority)
-        new Task(3, 4, 3, 2), // Task 5: Arrival 4, Burst 30, Priority 2 (High priority)
-        new Task(2, 5, 6, 1), // Task 6: Arrival 5, Burst 35, Priority 1 (Highest priority)
+        new Task(1, 0, 12, 9), // Task 1: Arrival 0, Burst 12, Priority 9 (Lowest priority)
+        new Task(2, 1, 10, 8), // Task 2: Arrival 1, Burst 10, Priority 8 (Low priority)
+        new Task(3, 2, 8, 7),  // Task 3: Arrival 2, Burst 8, Priority 7 (Low priority)
+        new Task(4, 3, 6, 2),  // Task 4: Arrival 3, Burst 6, Priority 2 (High priority)
+        new Task(5, 4, 4, 1),  // Task 5: Arrival 4, Burst 4, Priority 1 (Highest priority)
+        new Task(6, 5, 14, 5), // Task 6: Arrival 5, Burst 14, Priority 5 (Middle priority)
+        new Task(7, 6, 9, 6),  // Task 7: Arrival 6, Burst 9, Priority 6 (Low priority)
+        new Task(8, 7, 11, 3), // Task 8: Arrival 7, Burst 11, Priority 3 (High priority)
+        new Task(9, 8, 7, 4),  // Task 9: Arrival 8, Burst 7, Priority 4 (Middle priority)
+        new Task(10, 9, 5, 2)  // Task 10: Arrival 9, Burst 5, Priority 2 (High priority)
     };
-
     TaskManager tm(tasks);
 
     // multiLevelQueue mlq(tm, 3);
@@ -519,6 +530,7 @@ int main()
 
     PriorityScheduling prs(tm);
     prs.Schedule();
+    prs.CalculateMetrics();
 
     return 0;
 }
